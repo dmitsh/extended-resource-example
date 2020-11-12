@@ -1,0 +1,36 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: ext-res-api
+  namespace: ext-res
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ext-res-rw
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - pods
+  - nodes
+  - nodes/status
+  - services
+  verbs:
+  - get
+  - list
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ext-res-rw
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ext-res-rw
+subjects:
+- kind: ServiceAccount
+  name: ext-res-api
+  namespace: ext-res

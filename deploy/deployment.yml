@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: extended-resource-example
+  name: extres
+  namespace: ext-res
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: extended-resource-example
+  template:
+    metadata:
+      labels:
+        app: extended-resource-example
+      name: extres
+    spec:
+      serviceAccountName: ext-res-api
+      containers:
+      - name: extres
+        image: docker.io/dmitsh/extres:0.1
+        imagePullPolicy: IfNotPresent
+        args:
+        - /usr/local/bin/extres
