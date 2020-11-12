@@ -1,22 +1,19 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: ext-res-api
-  namespace: ext-res
+  name: extres-api
+  namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ext-res-rw
+  name: extres-reader
 rules:
 - apiGroups:
   - ""
   resources:
-  - namespaces
-  - pods
   - nodes
   - nodes/status
-  - services
   verbs:
   - get
   - list
@@ -25,12 +22,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: ext-res-rw
+  name: extres-reader
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: ext-res-rw
+  name: extres-reader
 subjects:
 - kind: ServiceAccount
-  name: ext-res-api
-  namespace: ext-res
+  name: extres-api
+  namespace: kube-system

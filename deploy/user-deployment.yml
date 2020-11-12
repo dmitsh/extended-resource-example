@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-app
+  labels:
+    app: custom-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-app
+  template:
+    metadata:
+      labels:
+        app: custom-app
+    spec:
+      containers:
+      - name: user
+        image: ubuntu:20.04
+        imagePullPolicy: IfNotPresent
+        command: ['sh', '-c', 'while : ; do echo ping; sleep 5; done']
+        resources:
+          limits:
+            example.com/mydev: "400Mi"
+          requests:
+            example.com/mydev: "400Mi"
