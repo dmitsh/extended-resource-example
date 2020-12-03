@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
+	"os/signal"
+	"syscall"
 
+	"github.com/oklog/run"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -16,7 +18,7 @@ import (
 type patchExtendedResource struct {
 	Op    string `json:"op"`
 	Path  string `json:"path"`
-	Value string `json:"value"`
+	Value uint32 `json:"value"`
 }
 
 func main() {
@@ -43,7 +45,7 @@ func main() {
 	payload := []patchExtendedResource{{
 		Op:    "add",
 		Path:  "/status/capacity/example.com~1mydev",
-		Value: "1Gi",
+		Value: 1073741824, // 1 Gi
 	}}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
@@ -54,8 +56,36 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	// busy wait - for testing
-	for {
-		time.Sleep(10 * time.Second)
+
+	var g run.Group
+	{
+		// Termination handler.
+		term := make(chan os.Signal, 1)
+		signal.Notify(term, os.Interrupt, syscall.SIGTERM)
+		cancel := make(chan struct{})
+		g.Add(
+			func() error {
+				select {
+				case <-term:
+					fmt.Println("Received SIGTERM, exiting gracefully...")
+					onExit()
+				case <-cancel:
+					onExit()
+				}
+				return nil
+			},
+			func(err error) {
+				close(cancel)
+			},
+		)
 	}
+	// add additional groups here
+	if err := g.Run(); err != nil {
+		panic(err.Error())
+	}
+	fmt.Println("Exit")
+}
+
+func onExit() {
+	// on-exit housekeeping
 }
