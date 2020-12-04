@@ -3,17 +3,19 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/oklog/run"
+	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
+
+const resourceName = "example.com~1mydev"
 
 type patchExtendedResource struct {
 	Op    string `json:"op"`
@@ -24,37 +26,35 @@ type patchExtendedResource struct {
 func main() {
 	// get the node name
 	nodeName := os.Getenv("NODE_NAME")
-	fmt.Printf("NodeName: %s\n", nodeName)
+	log.Infof("NODE_NAME: %s", nodeName)
 	// create the in-cluster config
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
+		log.Fatalln(err.Error())
 	}
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		log.Fatalln(err.Error())
 	}
 	// get the node object
 	node, err := clientset.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
 	if err != nil {
-		panic(err.Error())
+		log.Fatalln(err.Error())
 	}
-	fmt.Printf("Found node %q %s\n", node.Name, node.String())
 	// create and send patch request
 	payload := []patchExtendedResource{{
 		Op:    "add",
-		Path:  "/status/capacity/example.com~1mydev",
-		Value: 1073741824, // 1 Gi
+		Path:  "/status/capacity/" + resourceName,
+		Value: getResourceCapacity(),
 	}}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		panic(err.Error())
+		log.Fatalln(err.Error())
 	}
-	//result := clientset.CoreV1().RESTClient().Patch(types.JSONPatchType).Resource("nodes").Name(framework.TestContext.NodeName).SubResource("status").Body(patch).Do(context.TODO())
 	_, err = clientset.CoreV1().Nodes().Patch(context.TODO(), node.Name, types.JSONPatchType, payloadBytes, metav1.PatchOptions{}, "status")
 	if err != nil {
-		panic(err.Error())
+		log.Fatalln(err.Error())
 	}
 
 	var g run.Group
@@ -67,7 +67,7 @@ func main() {
 			func() error {
 				select {
 				case <-term:
-					fmt.Println("Received SIGTERM, exiting gracefully...")
+					log.Infoln("Received SIGTERM, exiting gracefully...")
 					onExit()
 				case <-cancel:
 					onExit()
@@ -81,11 +81,17 @@ func main() {
 	}
 	// add additional groups here
 	if err := g.Run(); err != nil {
-		panic(err.Error())
+		log.Fatalln(err.Error())
 	}
-	fmt.Println("Exit")
+	log.Infoln("Exit")
 }
 
+// getResourceCapacity return resource capacity on the node
+func getResourceCapacity() uint32 {
+	return 1073741824 // 1Gi
+}
+
+// onExit does necessary cleanup before exiting
 func onExit() {
-	// on-exit housekeeping
+
 }

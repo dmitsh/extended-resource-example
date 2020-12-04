@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/googleapis/gnostic v0.5.3 // indirect
 	github.com/oklog/run v1.1.0
+	github.com/sirupsen/logrus v1.7.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58 // indirect
