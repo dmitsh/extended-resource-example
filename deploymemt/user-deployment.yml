@@ -16,11 +16,9 @@ spec:
     spec:
       containers:
       - name: user
-        image: ubuntu:20.04
+        image: busybox
         imagePullPolicy: IfNotPresent
-        command: ['sh', '-c', 'while : ; do echo ping; sleep 5; done']
+        command: ['sh', '-c', 'while : ; do echo ping; sleep 10; done']
         resources:
           limits:
-            example.com/mydev: "400Mi"
-          requests:
-            example.com/mydev: "400Mi"
+            example.com/extres: "400Mi"

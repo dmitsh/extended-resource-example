@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const resourceName = "example.com~1mydev"
+const resourceName = "example.com~1extres"
 
 type patchExtendedResource struct {
 	Op    string `json:"op"`

@@ -19,8 +19,6 @@ spec:
       - name: extres
         image: docker.io/dmitsh/extres:0.1
         imagePullPolicy: Always
-        args:
-        - /usr/local/bin/extres
         env:
         - name: NODE_NAME
           valueFrom:
