@@ -17,10 +17,10 @@ import (
 
 const resourceName = "example.com~1extres"
 
-type patchExtendedResource struct {
-	Op    string `json:"op"`
-	Path  string `json:"path"`
-	Value uint32 `json:"value"`
+type patchNodeCmd struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
 }
 
 func main() {
@@ -43,11 +43,20 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 	// create and send patch request
-	payload := []patchExtendedResource{{
+	capacity := getResourceCapacity()
+
+	payload := []patchNodeCmd{{
 		Op:    "add",
 		Path:  "/status/capacity/" + resourceName,
-		Value: getResourceCapacity(),
+		Value: capacity,
 	}}
+	if capacity > 0 {
+		payload = append(payload, patchNodeCmd{
+			Op:    "add",
+			Path:  "/metadata/labels/" + resourceName,
+			Value: "enabled",
+		})
+	}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Fatalln(err.Error())
